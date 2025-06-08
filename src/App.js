@@ -13,6 +13,8 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/user" element={<UserDashboard/>} />
+        <Route path="/profile" element={<Profile/>} />
+        <Route path="/booking" element={<DaftarBooking/>} />
         <Route path="/admin" element={<AdminDashboard/>} /> 
         <Route
           path="/admin/*"
