@@ -4,6 +4,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import UserDashboard from "./pages/UserDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import Profile from "./pages/Profile";
+import DaftarBooking from "./pages/DaftarBooking";
 import AdminRoute from "./components/AdminRoute";
 
 function App() {
