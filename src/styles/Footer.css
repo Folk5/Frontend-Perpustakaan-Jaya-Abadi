@@ -1,0 +1,51 @@
+/* Gaya untuk Footer */
+.footer {
+  background-color: #0080ff; /* Warna yang sama dengan header */
+  color: white;
+  text-align: center;
+  padding: 1.5rem 3rem;
+  margin-top: 3rem;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+
+.footer-links a {
+  color: #233133; /* Warna link yang kontras dengan background biru */
+  text-decoration: none;
+  margin: 0 0.8rem;
+  font-size: 0.9rem;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+/* Media Queries Footer */
+@media (max-width: 992px) {
+  .footer {
+    padding: 1.2rem 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 1rem 1.5rem;
+  }
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .footer-links a {
+    margin: 0 0.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 0.8rem 1rem;
+    font-size: 0.8rem;
+  }
+}

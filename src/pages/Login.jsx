@@ -25,7 +25,7 @@ function Login() {
         if (role === "admin") {
           window.location.href = "/admin";
         } else if (role === "member") {
-          window.location.href = "/user";
+          window.location.href = "/dashboard";
         } else {
           alert("Role tidak dikenali.");
         }

@@ -1,0 +1,252 @@
+/* Gaya Umum untuk Body dan Container */
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #f0f2f5;
+  color: #333;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Gaya untuk Search Bar yang dipindahkan */
+.search-section {
+  text-align: center;
+  margin-bottom: 2rem; /* Jarak dari daftar buku */
+}
+
+.search-wrapper {
+  position: relative;
+  display: inline-flex; /* Gunakan inline-flex untuk menengahkan */
+  align-items: center;
+  width: 100%; /* Agar bisa responsif */
+  max-width: 400px; /* Batasi lebar search bar */
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  pointer-events: none;
+  color: #666;
+}
+
+.search-input {
+  padding: 0.8rem 1rem 0.8rem 2.8rem; /* Padding lebih besar */
+  border-radius: 25px;
+  border: 1px solid #ddd;
+  outline: none;
+  width: 100%; /* Memenuhi lebar parent (max-width 400px) */
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+/* Konten utama dan daftar buku */
+.main-content {
+  flex: 1;
+  padding: 2rem 3rem;
+}
+
+.welcome-container {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.welcome-text {
+  font-size: 2.5rem;
+  margin: 0.5rem 0 0;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.daftar-buku-text {
+  font-size: 1.8rem;
+  margin: 1.5rem 0 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 2px solid #007bff;
+  display: inline-block;
+  padding-bottom: 0.5rem;
+}
+
+.highlight {
+  color: #007bff;
+  font-weight: 800;
+}
+
+.book-list {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  max-width: 1200px; /* Pertahankan ini agar kartu buku tidak terlalu melebar */
+  margin: 0 auto;    /* Pertahankan ini untuk menengahkan daftar kartu buku */
+}
+
+.book-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.book-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.book-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.8rem;
+}
+
+.book-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.book-icon {
+  font-size: 1.8rem;
+  color: #007bff;
+}
+
+.book-card p {
+  margin: 0.4rem 0;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.status {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed #eee;
+}
+
+.status.available {
+  color: #28a745;
+}
+
+.status.unavailable {
+  color: #dc3545;
+}
+
+.button-container {
+  margin-top: 1.2rem;
+  text-align: center;
+}
+
+.btn {
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-booking {
+  background-color: #007bff;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+}
+
+.btn-booking:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3);
+}
+
+.btn-disabled {
+  background-color: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Media Queries DashboardPage */
+@media (max-width: 992px) {
+  .main-content {
+    padding: 1.5rem 2rem;
+  }
+  .welcome-text {
+    font-size: 2rem;
+  }
+  .daftar-buku-text {
+    font-size: 1.5rem;
+  }
+  .search-input {
+    max-width: 350px;
+  }
+  .book-list {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .search-section {
+    margin-bottom: 1.5rem;
+  }
+  .search-wrapper {
+    max-width: 100%;
+  }
+  .search-input {
+    font-size: 0.9rem;
+    padding: 0.7rem 1rem 0.7rem 2.5rem;
+  }
+  .main-content {
+    padding: 1rem 1.5rem;
+  }
+  .welcome-text {
+    font-size: 1.8rem;
+  }
+  .daftar-buku-text {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-input {
+    font-size: 0.85rem;
+  }
+  .main-content {
+    padding: 0.8rem 1rem;
+  }
+  .welcome-text {
+    font-size: 1.5rem;
+  }
+  .daftar-buku-text {
+    font-size: 1.1rem;
+  }
+  .book-card {
+    padding: 1rem;
+  }
+  .book-header h3 {
+    font-size: 1rem;
+  }
+  .book-icon {
+    font-size: 1.5rem;
+  }
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}
