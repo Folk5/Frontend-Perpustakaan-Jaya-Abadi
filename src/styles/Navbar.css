@@ -1,139 +1,22 @@
-/* Gaya untuk Header dan elemen terkait Navbar */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #0080ff; /* Warna header */
+.navbar {
+  /* Hapus fixed-top dari sini jika ada, karena sudah diatur di JSX */
+  /* Bootstrap's sticky-top class will handle position: sticky and top: 0 */
+  background-color: #212529; /* Apply the background color directly */
+}
+
+/* Ensure text colors are applied */
+.navbar-brand,
+.nav-link.text-white {
+  color: white !important;
+}
+
+.nav-link.text-warning {
+  color: #ffc107 !important;
+}
+
+/* Basic styling for the logout button, though Bootstrap classes handle most of it */
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
   color: white;
-  padding: 1rem 3rem;
-  font-size: 0.95rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.logo {
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-decoration: none;
-  color: white;
-  letter-spacing: -0.5px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.logo:hover {
-  text-decoration: none;
-  color: white;
-  opacity: 0.9;
-}
-
-.logo-icon {
-  height: 35px; /* Sesuaikan tinggi logo */
-  width: auto; /* Jaga rasio aspek */
-}
-
-.nav-menu {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.nav-menu a {
-  color: white;
-  text-decoration: none;
-  font-size: 1rem;
-  font-weight: 500;
-  padding: 0.5rem 0;
-  position: relative;
-}
-
-.nav-menu a::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 0;
-  height: 2px;
-  background-color: #00bcd4;
-  transition: width 0.3s ease-in-out;
-}
-
-.nav-menu a:hover::after {
-  width: 100%;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.btn-logout {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 25px;
-  border: none;
-  background-color: #dc3545; /* Merah untuk logout */
-  color: white;
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.btn-logout:hover {
-  background-color: #c82333;
-  transform: translateY(-2px);
-}
-
-.btn-logout svg {
-  fill: white; /* Pastikan ikon berwarna putih */
-}
-
-/* Media Queries Navbar */
-@media (max-width: 992px) {
-  .header {
-    padding: 1rem 2rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
-  }
-  .nav-menu {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.8rem;
-  }
-  .header-right {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .header {
-    padding: 0.8rem 1rem;
-  }
-  .logo {
-    font-size: 1.3rem;
-  }
-  .logo-icon {
-    height: 30px;
-  }
-  .nav-menu a {
-    font-size: 0.9rem;
-    padding: 0.3rem 0;
-  }
-  .btn-logout {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
-  }
 }

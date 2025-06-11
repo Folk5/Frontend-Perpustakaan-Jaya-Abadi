@@ -1,10 +1,20 @@
 /* Gaya untuk Footer */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+
 .footer {
-  background-color: #0080ff; /* Warna yang sama dengan header */
+  background-color: #0080ff;
   color: white;
   text-align: center;
-  padding: 1.5rem 3rem;
-  margin-top: 3rem;
+  padding: 1.5rem 2rem;
+  margin-top: auto; /* Footer akan berada di bawah secara otomatis */
+  width: 100%; /* Menjamin lebar footer penuh */
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
 }
 

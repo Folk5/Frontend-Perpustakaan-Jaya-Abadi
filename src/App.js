@@ -7,6 +7,7 @@ import AdminRoute from "./components/AdminRoute";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import DaftarBooking from "./pages/DaftarBooking";
+import AddBook from "./pages/AddBook";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/booking" element={<DaftarBooking />} />
+        <Route path="/add-book" element={<AddBook />} />
         
         {/* Admin Route */}
         <Route                    
