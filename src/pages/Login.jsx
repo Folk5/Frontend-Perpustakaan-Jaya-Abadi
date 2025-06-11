@@ -21,6 +21,7 @@ function Login() {
         const role = data.role;
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", role);
+        localStorage.setItem("accountId", data.accountId);
 
         if (role === "admin") {
           window.location.href = "/admin";
