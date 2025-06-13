@@ -32,7 +32,7 @@ const BookCard = ({ book }) => {
                 <p><strong>Tanggal Terbit:</strong> {book.tgl_terbit}</p>
                 <p><strong>Rak Buku:</strong> {getRakLabel(book.rakbuku_id_fk)}</p>
                 <p className={`status ${isAvailable ? "available" : "unavailable"}`}>
-                    <strong>Status Rak:</strong> {statusText}
+                    <strong>Status :</strong> {statusText}
                 </p>
             </div>
             <div className="button-container">
@@ -119,7 +119,7 @@ const DashboardPage = () => {
                     <div className="input-group w-100 max-width-500 mx-auto">
                         <input
                             type="text"
-                            className="form-control"
+                            className="form-control text-center"
                             placeholder="Cari buku berdasarkan judul, penulis, atau jenis"
                             value={searchTerm}
                             onChange={handleSearchChange}
@@ -131,8 +131,6 @@ const DashboardPage = () => {
                     {renderContent()}
                 </div>
             </main>
-
-            {/* Tambahkan komponen Footer di sini, setelah main content */}
             <Footer />
         </div>
     );

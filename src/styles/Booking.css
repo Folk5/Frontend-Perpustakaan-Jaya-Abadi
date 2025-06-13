@@ -1,295 +1,201 @@
-/* DaftarBookingSaya.css */
+/* Booking.css */
 
-/* Main Container */
-.booking-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
-  padding: 1rem;
-}
+/* Hapus atau nonaktifkan style yang bentrok dengan DashboardPage.css */
+/* .booking-container, .header, .card-container tidak lagi diperlukan di sini
+   karena layout utama diambil dari DashboardPage.css */
 
-/* Header Styles */
-.header {
-  text-align: center;
-  padding: 2rem 0;
-  margin-bottom: 1.5rem;
-}
-
-.header-title {
-  font-size: 1.875rem;
-  font-weight: bold;
-  color: white;
-  margin-bottom: 0.5rem;
-}
-
-.header-subtitle {
-  color: #dbeafe;
-  font-size: 1.125rem;
-}
-
-/* Card Container */
-.card-container {
-  max-width: 28rem;
-  margin: 0 auto;
-  background: white;
-  border-radius: 1rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
-}
-
-/* Navigation Header */
-.nav-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  background: white;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.nav-icon-container {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.nav-icon {
-  width: 2rem;
-  height: 2rem;
-  background: #2563eb;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nav-icon svg {
-  width: 1rem;
-  height: 1rem;
-  color: white;
-}
-
-.nav-decorator {
-  width: 1.5rem;
-  height: 1.5rem;
-  background: linear-gradient(45deg, #3b82f6, #2563eb);
-  border-radius: 0.25rem;
-}
-
-/* Booking List */
-.booking-list {
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* Book Card Styles */
+/* Book Card Styles - Pertahankan ini dan gabungkan dengan .book-card dari DashboardPage.css */
 .book-card {
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-  border: 1px solid #f3f4f6;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+    border-radius: 0.75rem; /* Dari booking.css */
+    /* Padding, border, shadow dari DashboardPage.css sudah cukup baik,
+       tapi kita bisa override atau tambahkan yang spesifik untuk booking */
+    /* padding: 1.25rem; */
+    /* border: 1px solid #f3f4f6; */
+    /* box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); */
+    transition: all 0.3s ease;
+    /* Kita bisa tambahkan margin-bottom jika tidak menggunakan grid gap */
 }
 
 .book-card:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); /* Dari booking.css */
 }
 
 .book-card.active {
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-color: #90caf9; /* Tambahkan border yang cocok */
 }
 
 .book-card.overdue {
-  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+    background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+    border-color: #ef9a9a; /* Tambahkan border yang cocok */
 }
 
 /* Book Info Section */
 .book-info {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
 .book-icon {
-  width: 3rem;
-  height: 3.5rem;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  border-radius: 0.5rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    width: 3rem;
+    height: 3.5rem;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-radius: 0.5rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .book-icon svg {
-  width: 1.5rem;
-  height: 1.5rem;
-  color: white;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: white;
 }
 
 .book-details {
-  flex: 1;
-  min-width: 0;
+    flex: 1;
+    min-width: 0;
 }
 
 .book-title {
-  font-weight: bold;
-  font-size: 1.25rem;
-  margin-bottom: 0.75rem;
+    font-weight: bold;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
 }
 
 .book-title.blue {
-  color: #1e3a8a;
+    color: #1e3a8a;
 }
 
 .book-title.red {
-  color: #7f1d1d;
+    color: #7f1d1d;
 }
 
 .book-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .meta-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
 }
 
 .meta-item svg {
-  width: 1rem;
-  height: 1rem;
-  color: #2563eb;
+    width: 1rem;
+    height: 1rem;
+    color: #2563eb;
 }
 
 .meta-label {
-  font-weight: 500;
+    font-weight: 500;
 }
 
 /* Booking Details Section */
 .booking-details {
-  padding-top: 0.75rem;
-  border-top: 1px solid #e5e7eb;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .booking-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
 }
 
 .booking-item svg {
-  width: 1rem;
-  height: 1rem;
-  color: #2563eb;
+    width: 1rem;
+    height: 1rem;
+    color: #2563eb;
 }
 
 .booking-label {
-  font-weight: 500;
-  color: #1f2937;
+    font-weight: 500;
+    color: #1f2937;
 }
 
 .booking-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .status-text {
-  font-weight: 500;
-  font-size: 0.875rem;
+    font-weight: 500;
+    font-size: 0.875rem;
 }
 
 .status-text.active {
-  color: #059669;
+    color: #059669;
 }
 
 .status-text.overdue {
-  color: #dc2626;
+    color: #dc2626;
 }
 
 /* Status Badge */
 .status-badge {
-  margin-top: 0.75rem;
+    margin-top: 0.75rem;
 }
 
 .overdue-badge {
-  font-size: 0.75rem;
-  font-weight: bold;
-  color: #dc2626;
-  background: #fef2f2;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid #fecaca;
-  display: inline-block;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #dc2626;
+    background: #fef2f2;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #fecaca;
+    display: inline-block;
 }
 
-/* Responsive Design */
-@media (max-width: 640px) {
-  .booking-container {
-    padding: 0.5rem;
-  }
-  
-  .header {
-    padding: 1.5rem 0;
-    margin-bottom: 1rem;
-  }
-  
-  .header-title {
-    font-size: 1.5rem;
-  }
-  
-  .header-subtitle {
-    font-size: 1rem;
-  }
-  
-  .card-container {
-    margin: 0 0.5rem;
-  }
-  
-  .booking-list {
-    padding: 1rem;
-  }
-  
-  .book-card {
-    padding: 1rem;
-  }
-}
-
-/* Animation for loading states */
+/* Animation for loading states (pertahankan jika ingin) */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .book-card {
-  animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.3s ease-out;
 }
 
-/* Hover effects */
+/* Hover effects (pertahankan jika ingin) */
 .book-card:hover .book-icon {
-  transform: scale(1.05);
-  transition: transform 0.2s ease;
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
 }
 
 .book-card:hover .book-title {
-  transform: translateY(-1px);
-  transition: transform 0.2s ease;
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+}
+
+/* Tambahkan gaya untuk tombol "Kembalikan Buku" */
+.button-container .btn-primary {
+  background-color: #2563eb; /* Biru Bootstrap yang lebih gelap */
+  border-color: #2563eb;
+  color: white;
+}
+
+.button-container .btn-primary:hover {
+  background-color: #1d4ed8; /* Biru yang sedikit lebih gelap saat hover */
+  border-color: #1d4ed8;
 }

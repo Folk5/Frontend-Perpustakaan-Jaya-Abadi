@@ -1,7 +1,7 @@
 .navbar {
   /* Hapus fixed-top dari sini jika ada, karena sudah diatur di JSX */
   /* Bootstrap's sticky-top class will handle position: sticky and top: 0 */
-  background-color: #212529; /* Apply the background color directly */
+  background-color: #0080ff; /* Apply the background color directly */
 }
 
 /* Ensure text colors are applied */
