@@ -1,8 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+// UBAH: import Link dan useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/Navbar.css';
 
-const Navbar = ({ role, userId }) => {
+// Hapus userId jika tidak digunakan di sini untuk kebersihan kode
+const Navbar = ({ role }) => { 
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -10,17 +12,16 @@ const Navbar = ({ role, userId }) => {
     if (isConfirmed) {
       localStorage.removeItem("token");
       localStorage.removeItem("role");
+      // UBAH: Gunakan navigate untuk konsistensi
       navigate("/");
     }
   };
 
-  const contextPath = "";
-
   return (
-    // UBAH: fixed-top menjadi sticky-top
     <nav className="navbar navbar-expand-lg sticky-top">
       <div className="container-fluid">
-        <a className="navbar-brand text-white" href={`${contextPath}/home`}>Perpustakaan</a>
+        {/* UBAH: Gunakan Link untuk navigasi internal */}
+        <Link className="navbar-brand text-white" to="/home">Perpustakaan</Link>
         <button
           className="navbar-toggler"
           type="button"
@@ -35,20 +36,29 @@ const Navbar = ({ role, userId }) => {
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <a className="nav-link text-white" href="/dashboard">Beranda</a>
+              <Link className="nav-link text-white" to="/dashboard">Beranda</Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link text-white" href="/booking">Peminjaman</a>
+              <Link className="nav-link text-white" to="/booking">Peminjaman</Link>
             </li>
-            {role === "admin" ? (
+            
+            {/* --- PERUBAHAN LOGIKA DI SINI --- */}
+
+            {/* Tampilkan link Profile untuk semua role */}
+            <li className="nav-item">
+              <Link className="nav-link text-white" to="/profile">Profile</Link>
+            </li>
+
+            {/* Tampilkan link Dashboard Admin HANYA jika role adalah "admin" */}
+
+            {role === "admin" && (
               <li className="nav-item">
-                <a className="nav-link text-warning" href="/admin">Dashboard Admin</a>
-              </li>
-            ) : (
-              <li className="nav-item">
-                <a className="nav-link text-white" href="/profile">Profile</a>
+                <Link className="nav-link text-warning" to="/admin">Dashboard Admin</Link>
               </li>
             )}
+
+            {/* --- AKHIR PERUBAHAN LOGIKA --- */}
+
           </ul>
           <div className="btn-group">
             <button type="button" className="btn btn-danger" onClick={handleLogout}>

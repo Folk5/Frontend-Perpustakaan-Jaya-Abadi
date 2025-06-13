@@ -1,23 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { Spinner } from "react-bootstrap";
-import CustomNavbar from "../components/Navbar";
-import Footer from "../components/Footer"; // Import komponen Footer
+import CustomNavbar from "../components/Navbar"; // Pastikan nama file dan komponen cocok
+import Footer from "../components/Footer";
 import "../styles/DashboardPage.css";
 
+// Helper function untuk mengubah ID rak menjadi label yang mudah dibaca
 const getRakLabel = (rakId) => {
     switch (rakId) {
         case 1: return 'Fiksi';
         case 2: return 'Non-Fiksi';
         case 3: return 'Referensi';
-        case 4: return 'Science';
-        case 5: return 'Comic';
+        case 4: return 'Sains';
+        case 5: return 'Komik';
         default: return 'Lainnya';
     }
 };
 
+// Komponen untuk menampilkan satu kartu buku
 const BookCard = ({ book }) => {
+    // Logika untuk menentukan ketersediaan buku
     const isAvailable = !book.status_booking;
     const statusText = isAvailable ? "Tersedia" : "Tidak Tersedia";
+
+    // --- PENAMBAHAN: Fungsi placeholder untuk handle booking ---
+    // Di sini Anda bisa menambahkan logika untuk booking, seperti request ke API
+    const handleBooking = (bookId) => {
+        alert(`Fungsi booking untuk buku ID: ${bookId} akan diimplementasikan.`);
+        // Contoh: await api.post('/bookings', { book_id: bookId });
+    };
 
     return (
         <div className="book-card card shadow-sm rounded">
@@ -29,7 +39,7 @@ const BookCard = ({ book }) => {
                 <p><strong>Tipe Buku:</strong> {book.tipe_buku}</p>
                 <p><strong>Penulis:</strong> {book.author}</p>
                 <p><strong>Jenis Buku:</strong> {book.jenis_buku}</p>
-                <p><strong>Tanggal Terbit:</strong> {book.tgl_terbit}</p>
+                <p><strong>Tanggal Terbit:</strong> {new Date(book.tgl_terbit).toLocaleDateString('id-ID')}</p>
                 <p><strong>Rak Buku:</strong> {getRakLabel(book.rakbuku_id_fk)}</p>
                 <p className={`status ${isAvailable ? "available" : "unavailable"}`}>
                     <strong>Status :</strong> {statusText}
@@ -37,7 +47,8 @@ const BookCard = ({ book }) => {
             </div>
             <div className="button-container">
                 {isAvailable ? (
-                    <button className="btn btn-primary w-100">Booking</button>
+                    // --- PERBAIKAN: Menambahkan onClick handler ---
+                    <button className="btn btn-primary w-100" onClick={() => handleBooking(book.buku_id)}>Booking</button>
                 ) : (
                     <button className="btn btn-secondary w-100" disabled>Tidak Tersedia</button>
                 )}
@@ -46,33 +57,49 @@ const BookCard = ({ book }) => {
     );
 };
 
+// Komponen utama untuk halaman Dashboard
 const DashboardPage = () => {
+    // State untuk menyimpan daftar buku master dari API
     const [books, setBooks] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
+    // State untuk menyimpan hasil filter buku yang akan ditampilkan
     const [filteredBooks, setFilteredBooks] = useState([]);
+    // State untuk menangani status loading
+    const [loading, setLoading] = useState(true);
+    // State untuk menangani pesan error
+    const [error, setError] = useState(null);
+    // State untuk menyimpan input dari kolom pencarian
+    const [searchTerm, setSearchTerm] = useState('');
+    // State untuk menyimpan role user, diambil dari localStorage
+    const [userRole, setUserRole] = useState(null);
 
+    // useEffect untuk mengambil data buku dari API saat komponen pertama kali dimuat
     useEffect(() => {
+        // Ambil juga role dari localStorage saat komponen dimuat
+        const role = localStorage.getItem('role');
+        setUserRole(role);
+
         const fetchBooks = async () => {
             try {
+                // Gunakan URL API yang sesuai
                 const response = await fetch("http://localhost:8080/api/books");
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                setBooks(data);
-                setFilteredBooks(data);
+                setBooks(data); // Simpan data master
+                setFilteredBooks(data); // Inisialisasi data yang akan ditampilkan
             } catch (e) {
-                setError(e.message);
+                setError("Gagal memuat data buku. Pastikan server API berjalan.");
+                console.error(e);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchBooks();
-    }, []);
+    }, []); // Dependency array kosong agar hanya berjalan sekali
 
+    // useEffect untuk memfilter buku setiap kali ada perubahan pada input pencarian atau data master
     useEffect(() => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
         const results = books.filter(book =>
@@ -83,19 +110,21 @@ const DashboardPage = () => {
         setFilteredBooks(results);
     }, [searchTerm, books]);
 
+    // Handler untuk memperbarui state searchTerm saat pengguna mengetik
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
     };
 
+    // Fungsi untuk merender konten utama berdasarkan state (loading, error, atau data)
     const renderContent = () => {
         if (loading) {
-            return <Spinner animation="border" variant="primary" />;
+            return <div className="text-center w-100"><Spinner animation="border" variant="primary" /></div>;
         }
         if (error) {
-            return <p className="text-danger">Error: {error}</p>;
+            return <p className="text-danger text-center w-100">Error: {error}</p>;
         }
         if (filteredBooks.length === 0) {
-            return <p>Tidak ada buku yang ditemukan.</p>;
+            return <p className="text-center w-100">Tidak ada buku yang cocok dengan pencarian Anda.</p>;
         }
         return (
             <div className="book-list">
@@ -108,11 +137,13 @@ const DashboardPage = () => {
 
     return (
         <div className="dashboard-container">
-            <CustomNavbar />
+            {/* --- PERBAIKAN: Melemparkan prop 'role' ke Navbar --- */}
+            <CustomNavbar role={userRole} />
+            
             <main className="main-content px-0">
                 <div className="header-section text-center py-5">
-                    <h1 className="display-4">Selamat datang di Perpustakaan Jaya Abadi!</h1>
-                    <p className="lead">Temukan buku yang Anda cari di daftar kami.</p>
+                    <h1 className="display-4">Selamat Datang di Perpustakaan!</h1>
+                    <p className="lead">Temukan buku favorit Anda di daftar kami.</p>
                 </div>
 
                 <div className="search-section mb-4">
@@ -131,6 +162,7 @@ const DashboardPage = () => {
                     {renderContent()}
                 </div>
             </main>
+            
             <Footer />
         </div>
     );

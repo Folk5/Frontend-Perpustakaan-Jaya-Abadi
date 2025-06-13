@@ -1,148 +1,203 @@
-import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import Footer from '../components/Footer'; // Sesuaikan path jika perlu
+import { Container, Row, Col, Card, Button, Table, InputGroup, FormControl, Badge, Spinner, Alert } from 'react-bootstrap';
+import { Search, PlusCircleFill, PencilSquare, Trash3Fill, HouseDoorFill, BoxArrowRight } from 'react-bootstrap-icons';
+
+// Komponen BukuTable tidak perlu diubah
+const BukuTable = ({ bukuList, onEdit, onDelete }) => (
+    <Card className="shadow-sm">
+        {/* ... isi komponen table ... */}
+        <Card.Header as="h5">Daftar Buku</Card.Header>
+        <Card.Body>
+        <Table striped bordered hover responsive>
+          <thead className="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Nama Buku</th>
+              <th>Jenis</th>
+              <th>Author</th>
+              <th>ID Rak</th>
+              <th>Tersedia</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bukuList.length > 0 ? (
+              bukuList.map((buku) => (
+                <tr key={buku.buku_id}>
+                    <td>{buku.buku_id}</td>
+                    <td>{buku.nama_buku}</td>
+                    <td>{buku.jenis_buku}</td>
+                    <td>{buku.author}</td>
+                    <td>{buku.rakbuku_id_fk}</td>
+                    <td>{`${buku.jml_tersedia} / ${buku.jumlah}`}</td>
+                    <td>
+                        <Badge bg={buku.jml_tersedia > 0 ? 'success' : 'danger'}>
+                        {buku.jml_tersedia > 0 ? 'Tersedia' : 'Habis'}
+                        </Badge>
+                    </td>
+                    <td>
+                        <Button variant="outline-warning" size="sm" className="me-2" onClick={() => onEdit(buku.buku_id)}>
+                            <PencilSquare /> Edit
+                        </Button>
+                        <Button variant="outline-danger" size="sm" onClick={() => onDelete(buku.buku_id)}>
+                            <Trash3Fill /> Hapus
+                        </Button>
+                    </td>
+                </tr>
+              ))
+            ) : (
+              <tr><td colSpan="8" className="text-center">Tidak ada buku yang ditemukan.</td></tr>
+            )}
+          </tbody>
+        </Table>
+      </Card.Body>
+    </Card>
+);
 
 const AdminDashboard = () => {
-  const bukuList = [
-    {
-      nama: 'Hujan',
-      tipe: 'fisik',
-      jenis: 'Novel',
-      tanggal: '2016-12-04',
-      author: 'Tere Liye',
-      rak: 'Non-Fiksi',
-      status: 'Tersedia',
-    },
-    {
-      nama: 'Atomic Habits',
-      tipe: 'fisik',
-      jenis: 'Edukasi',
-      tanggal: '2018-12-08',
-      author: 'James Clear',
-      rak: 'Fiksi',
-      status: 'Tidak Tersedia',
-    },
-    {
-      nama: 'Dune',
-      tipe: 'fisik',
-      jenis: 'Novel',
-      tanggal: '1965-07-02',
-      author: 'Frank Herbert',
-      rak: 'Non-Fiksi',
-      status: 'Tidak Tersedia',
-    },
-    {
-      nama: 'Komet Minor',
-      tipe: 'fisik',
-      jenis: 'Fiction',
-      tanggal: '2019-03-12',
-      author: 'Tere Liye',
-      rak: 'Fiksi',
-      status: 'Tersedia',
-    },
-  ];
+  const navigate = useNavigate();
+  
+  // State lainnya
+  const [bukuList, setBukuList] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredBuku, setFilteredBuku] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const rakList = [
-    { id: 1, jenis: 'Fiksi', lokasi: 'Rak A' },
-    { id: 2, jenis: 'Non-Fiksi', lokasi: 'Rak B' },
-  ];
+  // --- UBAH: LOGIKA PROTEKSI HALAMAN ---
+  // State untuk menandai apakah user berhak akses
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
+  useEffect(() => {
+    // 1. Periksa role dari localStorage saat komponen dimuat
+    const userRole = localStorage.getItem('role');
+
+    if (userRole !== 'admin') {
+      // 2. Jika bukan admin, tampilkan alert dan redirect
+      alert('Anda tidak memiliki hak akses ke halaman ini.');
+      navigate('/dashboard'); // Alihkan ke beranda user
+    } else {
+      // 3. Jika admin, izinkan komponen untuk dirender dan memuat data
+      setIsAuthorized(true);
+    }
+  }, [navigate]);
+
+  // useEffect untuk fetch data HANYA jika sudah terotorisasi
+  useEffect(() => {
+    // Jangan fetch data jika pengguna tidak berhak
+    if (!isAuthorized) return;
+
+    const fetchBuku = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:8080/api/books');
+        setBukuList(response.data);
+        setFilteredBuku(response.data);
+        setError(null);
+      } catch (err) {
+        setError('Gagal mengambil data dari server. Pastikan server API berjalan.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBuku();
+  }, [isAuthorized]); // Bergantung pada status otorisasi
+
+  // ... (Sisa logika lain tidak berubah)
+  const handleLogout = () => {
+    const isConfirmed = window.confirm('Apakah Anda yakin ingin keluar?');
+    if (isConfirmed) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      navigate("/");
+    }
+  };
+  
+  useEffect(() => {
+    if (!isAuthorized) return;
+    const results = bukuList.filter(buku =>
+      buku.nama_buku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      buku.jenis_buku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      buku.author.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredBuku(results);
+  }, [searchTerm, bukuList, isAuthorized]);
+
+  const handleAddBuku = () => alert('Fungsi Tambah Buku akan diimplementasikan.');
+  const handleEdit = (id) => alert(`Fungsi Edit untuk buku ID: ${id} akan diimplementasikan.`);
+  const handleDeleteBuku = async (id) => {
+    if (window.confirm(`Apakah Anda yakin ingin menghapus buku dengan ID: ${id}?`)) {
+        try {
+          await axios.delete(`http://localhost:8080/api/books/${id}`);
+          setBukuList(bukuList.filter(buku => buku.buku_id !== id));
+          alert(`Buku dengan ID: ${id} berhasil dihapus.`);
+        } catch (err) {
+          alert('Gagal menghapus buku. Terjadi kesalahan pada server.');
+          console.error(err);
+        }
+      }
+  };
+
+  const renderContent = () => {
+    if (loading) return <div className="text-center"><Spinner animation="border" /><p>Memuat...</p></div>;
+    if (error) return <Alert variant="danger">{error}</Alert>;
+    return <BukuTable bukuList={filteredBuku} onEdit={handleEdit} onDelete={handleDeleteBuku} />;
+  }
+  
+  // --- UBAH: JANGAN RENDER APAPUN JIKA TIDAK BERHAK ---
+  // Ini mencegah "flash" atau kedipan konten sebelum redirect
+  if (!isAuthorized) {
+    return null; 
+  }
+
+  // Jika lolos pengecekan, render seluruh halaman
   return (
-    <div className="container mt-5">
-      <div className="text-center mb-4">
-        <h1 className="text-primary">Admin Dashboard</h1>
-        <p className="lead text-secondary">Kelola Buku dan Rak Buku Perpustakaan</p>
-        <div className="mb-3">
-          <button className="btn btn-primary me-2">Beranda</button>
-          <button className="btn btn-danger">Keluar</button>
-        </div>
-      </div>
+    <>
+      <main className="my-4">
+        <Container fluid className="p-4 bg-light">
+          <Row className="justify-content-center mb-4">
+            <Col lg={10} className="text-center">
+              <h1 className="text-primary">Admin Dashboard</h1>
+              <p className="lead text-secondary">Manajemen Buku Perpustakaan</p>
+              <div>
+                <Link to="/dashboard" className="btn btn-info me-2">
+                  <HouseDoorFill className="me-2" /> Beranda
+                </Link>
+                <Button variant="danger" onClick={handleLogout}>
+                  <BoxArrowRight className="me-2" /> Logout
+                </Button>
+              </div>
+            </Col>
+          </Row>
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h3 className="text-secondary">Daftar Buku</h3>
-        <button className="btn btn-primary">List Pinjaman</button>
-      </div>
-
-      <div className="d-flex mb-4">
-        <input
-          type="text"
-          className="form-control me-2"
-          placeholder="Cari buku berdasarkan nama, tipe, jenis, atau author..."
-        />
-        <button className="btn btn-primary me-2">Cari</button>
-        <button className="btn btn-primary">Tambah Buku</button>
-      </div>
-
-      <div className="card mb-4 p-3 shadow">
-        <table className="table table-striped table-bordered">
-          <thead className="table-dark">
-            <tr>
-              <th>Nama Buku</th>
-              <th>Tipe Buku</th>
-              <th>Jenis Buku</th>
-              <th>Tanggal Terbit</th>
-              <th>Author</th>
-              <th>Rak Buku</th>
-              <th>Status Buku</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {bukuList.map((buku, index) => (
-              <tr key={index}>
-                <td>{buku.nama}</td>
-                <td>{buku.tipe}</td>
-                <td>{buku.jenis}</td>
-                <td>{buku.tanggal}</td>
-                <td>{buku.author}</td>
-                <td>{buku.rak}</td>
-                <td
-                  className={`fw-bold ${
-                    buku.status === 'Tersedia' ? 'text-success' : 'text-danger'
-                  }`}
-                >
-                  {buku.status}
-                </td>
-                <td>
-                  <button className="btn btn-warning btn-sm me-2">Edit</button>
-                  <button className="btn btn-danger btn-sm">Hapus</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h3 className="text-secondary">Daftar Rak Buku</h3>
-        <button className="btn btn-primary">Tambah Rak Buku</button>
-      </div>
-
-      <div className="card mb-4 p-3 shadow">
-        <table className="table table-striped table-bordered">
-          <thead className="table-dark">
-            <tr>
-              <th>ID Rak</th>
-              <th>Jenis Rak</th>
-              <th>Lokasi</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rakList.map((rak) => (
-              <tr key={rak.id}>
-                <td>{rak.id}</td>
-                <td>{rak.jenis}</td>
-                <td>{rak.lokasi}</td>
-                <td>
-                  <button className="btn btn-warning btn-sm me-2">Edit</button>
-                  <button className="btn btn-danger btn-sm">Hapus</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+          <Row className="justify-content-center mb-5">
+            <Col lg={10}>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <Button variant="success">List Pinjaman</Button>
+                <Button variant="primary" onClick={handleAddBuku}>
+                  <PlusCircleFill className="me-2" /> Tambah Buku
+                </Button>
+              </div>
+              <InputGroup className="mb-3">
+                <FormControl
+                  placeholder="Cari buku berdasarkan nama, jenis, atau author..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <Button variant="outline-secondary"><Search /></Button>
+              </InputGroup>
+              {renderContent()}
+            </Col>
+          </Row>
+        </Container>
+      </main>
+      <Footer />
+    </>
   );
 };
 
