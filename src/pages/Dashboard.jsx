@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Spinner } from "react-bootstrap";
-import CustomNavbar from "../components/Navbar"; // Pastikan nama file dan komponen cocok
+// PENAMBAHAN: Import komponen Modal, Button, Form, dan Spinner dari react-bootstrap
+import { Spinner, Modal, Button, Form, Alert } from "react-bootstrap";
+import axios from 'axios'; // Gunakan axios untuk request API
+import CustomNavbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "../styles/DashboardPage.css";
 
@@ -17,17 +19,10 @@ const getRakLabel = (rakId) => {
 };
 
 // Komponen untuk menampilkan satu kartu buku
-const BookCard = ({ book }) => {
-    // Logika untuk menentukan ketersediaan buku
+// UBAH: Komponen ini sekarang menerima prop onBookClick dari parent
+const BookCard = ({ book, onBookClick }) => {
     const isAvailable = !book.status_booking;
     const statusText = isAvailable ? "Tersedia" : "Tidak Tersedia";
-
-    // --- PENAMBAHAN: Fungsi placeholder untuk handle booking ---
-    // Di sini Anda bisa menambahkan logika untuk booking, seperti request ke API
-    const handleBooking = (bookId) => {
-        alert(`Fungsi booking untuk buku ID: ${bookId} akan diimplementasikan.`);
-        // Contoh: await api.post('/bookings', { book_id: bookId });
-    };
 
     return (
         <div className="book-card card shadow-sm rounded">
@@ -47,8 +42,8 @@ const BookCard = ({ book }) => {
             </div>
             <div className="button-container">
                 {isAvailable ? (
-                    // --- PERBAIKAN: Menambahkan onClick handler ---
-                    <button className="btn btn-primary w-100" onClick={() => handleBooking(book.buku_id)}>Booking</button>
+                    // UBAH: onClick sekarang memanggil fungsi dari prop
+                    <button className="btn btn-primary w-100" onClick={() => onBookClick(book)}>Booking</button>
                 ) : (
                     <button className="btn btn-secondary w-100" disabled>Tidak Tersedia</button>
                 )}
@@ -59,35 +54,29 @@ const BookCard = ({ book }) => {
 
 // Komponen utama untuk halaman Dashboard
 const DashboardPage = () => {
-    // State untuk menyimpan daftar buku master dari API
     const [books, setBooks] = useState([]);
-    // State untuk menyimpan hasil filter buku yang akan ditampilkan
     const [filteredBooks, setFilteredBooks] = useState([]);
-    // State untuk menangani status loading
     const [loading, setLoading] = useState(true);
-    // State untuk menangani pesan error
     const [error, setError] = useState(null);
-    // State untuk menyimpan input dari kolom pencarian
     const [searchTerm, setSearchTerm] = useState('');
-    // State untuk menyimpan role user, diambil dari localStorage
     const [userRole, setUserRole] = useState(null);
 
-    // useEffect untuk mengambil data buku dari API saat komponen pertama kali dimuat
+    // --- PENAMBAHAN: State untuk Modal dan proses booking ---
+    const [showModal, setShowModal] = useState(false);
+    const [selectedBook, setSelectedBook] = useState(null);
+    const [expiredDate, setExpiredDate] = useState('');
+    const [bookingLoading, setBookingLoading] = useState(false);
+    const [bookingError, setBookingError] = useState(null);
+    // --- AKHIR PENAMBAHAN ---
+
     useEffect(() => {
-        // Ambil juga role dari localStorage saat komponen dimuat
         const role = localStorage.getItem('role');
         setUserRole(role);
-
         const fetchBooks = async () => {
             try {
-                // Gunakan URL API yang sesuai
-                const response = await fetch("http://localhost:8080/api/books");
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                setBooks(data); // Simpan data master
-                setFilteredBooks(data); // Inisialisasi data yang akan ditampilkan
+                const response = await axios.get("http://localhost:8080/api/books");
+                setBooks(response.data);
+                setFilteredBooks(response.data);
             } catch (e) {
                 setError("Gagal memuat data buku. Pastikan server API berjalan.");
                 console.error(e);
@@ -95,11 +84,9 @@ const DashboardPage = () => {
                 setLoading(false);
             }
         };
-
         fetchBooks();
-    }, []); // Dependency array kosong agar hanya berjalan sekali
+    }, []);
 
-    // useEffect untuk memfilter buku setiap kali ada perubahan pada input pencarian atau data master
     useEffect(() => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
         const results = books.filter(book =>
@@ -110,61 +97,127 @@ const DashboardPage = () => {
         setFilteredBooks(results);
     }, [searchTerm, books]);
 
-    // Handler untuk memperbarui state searchTerm saat pengguna mengetik
-    const handleSearchChange = (e) => {
-        setSearchTerm(e.target.value);
+    // --- PENAMBAHAN: Fungsi untuk menangani alur booking ---
+    const handleBookClick = (book) => {
+        setSelectedBook(book); // Simpan buku yang dipilih
+        setExpiredDate(''); // Reset tanggal setiap kali modal dibuka
+        setBookingError(null); // Reset error
+        setShowModal(true); // Tampilkan modal
     };
 
-    // Fungsi untuk merender konten utama berdasarkan state (loading, error, atau data)
+    const handleConfirmBooking = async () => {
+        if (!expiredDate) {
+            setBookingError("Harap pilih tanggal pengembalian.");
+            return;
+        }
+
+        setBookingLoading(true);
+        setBookingError(null);
+
+        const accountId = localStorage.getItem('accountId');
+        const token = localStorage.getItem('token');
+
+        if (!accountId || !token) {
+            setBookingError("Data pengguna tidak ditemukan. Harap login kembali.");
+            setBookingLoading(false);
+            return;
+        }
+
+        const payload = {
+            bukuId: selectedBook.buku_id,
+            accountId: parseInt(accountId, 10),
+            expiredDate: expiredDate,
+        };
+
+        try {
+            await axios.post('http://localhost:8080/api/booking', payload, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            alert(`Buku "${selectedBook.nama_buku}" berhasil dibooking!`);
+            
+            // Perbarui status buku di UI secara instan
+            const updatedBooks = books.map(b => 
+                b.buku_id === selectedBook.buku_id ? { ...b, status_booking: true } : b
+            );
+            setBooks(updatedBooks);
+
+            setShowModal(false);
+        } catch (err) {
+            setBookingError(err.response?.data?.message || "Gagal melakukan booking.");
+            console.error(err);
+        } finally {
+            setBookingLoading(false);
+        }
+    };
+
+    const handleSearchChange = (e) => setSearchTerm(e.target.value);
+
     const renderContent = () => {
-        if (loading) {
-            return <div className="text-center w-100"><Spinner animation="border" variant="primary" /></div>;
-        }
-        if (error) {
-            return <p className="text-danger text-center w-100">Error: {error}</p>;
-        }
-        if (filteredBooks.length === 0) {
-            return <p className="text-center w-100">Tidak ada buku yang cocok dengan pencarian Anda.</p>;
-        }
+        if (loading) return <div className="text-center w-100"><Spinner animation="border" variant="primary" /></div>;
+        if (error) return <p className="text-danger text-center w-100">Error: {error}</p>;
+        if (filteredBooks.length === 0) return <p className="text-center w-100">Tidak ada buku yang cocok dengan pencarian Anda.</p>;
         return (
             <div className="book-list">
                 {filteredBooks.map((book) => (
-                    <BookCard key={book.buku_id} book={book} />
+                    // Berikan fungsi handleBookClick sebagai prop
+                    <BookCard key={book.buku_id} book={book} onBookClick={handleBookClick} />
                 ))}
             </div>
         );
     };
+    
+    // --- PENAMBAHAN: Logika untuk batas tanggal min dan max ---
+    const today = new Date().toISOString().split('T')[0];
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 7); // Batas booking maksimal 7 hari dari sekarang
+    const maxDateString = maxDate.toISOString().split('T')[0];
 
     return (
-        <div className="dashboard-container">
-            {/* --- PERBAIKAN: Melemparkan prop 'role' ke Navbar --- */}
-            <CustomNavbar role={userRole} />
-            
-            <main className="main-content px-0">
-                <div className="header-section text-center py-5">
-                    <h1 className="display-4">Selamat Datang di Perpustakaan!</h1>
-                    <p className="lead">Temukan buku favorit Anda di daftar kami.</p>
-                </div>
-
-                <div className="search-section mb-4">
-                    <div className="input-group w-100 max-width-500 mx-auto">
-                        <input
-                            type="text"
-                            className="form-control text-center"
-                            placeholder="Cari buku berdasarkan judul, penulis, atau jenis"
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                        />
+        <>
+            <div className="dashboard-container">
+                <CustomNavbar role={userRole} />
+                <main className="main-content px-0">
+                    <div className="header-section text-center py-5">
+                        <h1 className="display-4">Selamat Datang di Perpustakaan!</h1>
+                        <p className="lead">Temukan buku favorit Anda di daftar kami.</p>
                     </div>
-                </div>
+                    <div className="search-section mb-4">
+                        <div className="input-group w-100 max-width-500 mx-auto">
+                            <input type="text" className="form-control text-center" placeholder="Cari buku..." value={searchTerm} onChange={handleSearchChange} />
+                        </div>
+                    </div>
+                    <div className="book-list-container">{renderContent()}</div>
+                </main>
+                <Footer />
+            </div>
 
-                <div className="book-list-container">
-                    {renderContent()}
-                </div>
-            </main>
-            
-            <Footer />
-        </div>
+            {/* --- PENAMBAHAN: Komponen Modal untuk Kalender Booking --- */}
+            <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Booking Buku: {selectedBook?.nama_buku}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>Silakan pilih tanggal pengembalian buku.</p>
+                    <Form.Group>
+                        <Form.Label>Tanggal Pengembalian (Expired Date)</Form.Label>
+                        <Form.Control 
+                            type="date" 
+                            value={expiredDate} 
+                            onChange={(e) => setExpiredDate(e.target.value)}
+                            min={today} // Tidak bisa memilih tanggal kemarin
+                            max={maxDateString} // Batas maksimal peminjaman
+                        />
+                    </Form.Group>
+                    {bookingError && <Alert variant="danger" className="mt-3">{bookingError}</Alert>}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowModal(false)}>Batal</Button>
+                    <Button variant="primary" onClick={handleConfirmBooking} disabled={bookingLoading}>
+                        {bookingLoading ? <><Spinner as="span" size="sm" /> Memproses...</> : 'Konfirmasi Booking'}
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </>
     );
 };
 
