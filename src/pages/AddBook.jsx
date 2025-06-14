@@ -1,191 +1,152 @@
-import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import { Container, Card, Form, Button, Spinner, Alert, Row, Col } from 'react-bootstrap';
+import Footer from '../components/Footer';
 
-const AddBuku = () => {
+const AddBook = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     nama_buku: '',
     tipe_buku: 'fisik',
     jenis_buku: '',
     tgl_terbit: '',
     author: '',
-    rakbuku_id: '',
+    rakbuku_id_fk: '',
     jumlah: '',
-    gambarBuku: null,
   });
 
-  // Data rak buku bisa kamu fetch dari API nanti
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  // --- PENAMBAHAN: Definisikan pilihan rak secara statis di sini ---
   const rakOptions = [
-    { id: 1, jenis: 'Fiksi' },
-    { id: 2, jenis: 'Non-Fiksi' },
+    { id: 1, label: 'Fiksi' },
+    { id: 2, label: 'Non-Fiksi' },
+    { id: 3, label: 'Edukasi' },
+    { id: 4, label: 'Sains' },
+    { id: 5, label: 'Komik' },
+    // Anda bisa menambahkan opsi "Lainnya" jika diperlukan, misal dengan ID 0 atau 99
+    // { id: 99, label: 'Lainnya' }, 
   ];
+  // --- AKHIR PENAMBAHAN ---
+
+  // Efek untuk proteksi halaman
+  useEffect(() => {
+    const userRole = localStorage.getItem('role');
+    if (userRole !== 'admin') {
+      alert('Anda tidak memiliki hak akses ke halaman ini.');
+      navigate('/dashboard');
+    } else {
+      setIsAuthorized(true);
+    }
+    // HAPUS: Logika fetch data rak dari API sudah tidak diperlukan lagi
+  }, [navigate]);
 
   const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
+    const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: type === 'file' ? files[0] : value,
+      [name]: value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Data dikirim:', formData);
+    setLoading(true);
+    setError(null);
 
-    // Simulasi kirim data form ke backend
-    // Buat FormData jika upload file:
-    const data = new FormData();
-    Object.keys(formData).forEach((key) => {
-      data.append(key, formData[key]);
-    });
+    const token = localStorage.getItem('token');
+    if (!token) {
+        setError("Token tidak ditemukan. Harap login kembali.");
+        setLoading(false);
+        return;
+    }
 
-    // Contoh fetch POST (sesuaikan URL dan method)
-    /*
-    fetch('/api/buku', {
-      method: 'POST',
-      body: data,
-    })
-      .then(response => response.json())
-      .then(result => {
-        alert('Buku berhasil ditambahkan!');
-      })
-      .catch(error => {
-        alert('Gagal menambahkan buku');
+    const payload = {
+      nama_buku: formData.nama_buku,
+      tipe_buku: formData.tipe_buku,
+      jenis_buku: formData.jenis_buku,
+      tgl_terbit: formData.tgl_terbit,
+      author: formData.author,
+      rakbuku_id_fk: parseInt(formData.rakbuku_id_fk, 10),
+      jumlah: parseInt(formData.jumlah, 10),
+    };
+
+    try {
+      await axios.post('http://localhost:8080/api/books', payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
       });
-    */
+
+      alert('Buku berhasil ditambahkan!');
+      navigate('/admin');
+    } catch (err) {
+      console.error('Error adding book:', err.response ? err.response.data : err.message);
+      setError('Gagal menambahkan buku. Periksa kembali data Anda.');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  if (!isAuthorized) {
+    return null;
+  }
+
   return (
-    <div className="container mt-5" style={{ maxWidth: '600px' }}>
-      <div className="card p-4 shadow-sm rounded">
-        <h3 className="text-center text-primary mb-4">Tambah Buku Baru</h3>
-        <form onSubmit={handleSubmit} encType="multipart/form-data">
-          <div className="form-group mb-3">
-            <label htmlFor="nama_buku">Nama Buku</label>
-            <input
-              type="text"
-              name="nama_buku"
-              id="nama_buku"
-              className="form-control"
-              required
-              placeholder="Masukkan nama buku"
-              value={formData.nama_buku}
-              onChange={handleChange}
-            />
-          </div>
+    <>
+      <main className="my-5">
+        <Container style={{ maxWidth: '700px' }}>
+          <Card className="p-4 shadow">
+            <h3 className="text-center text-primary mb-4">Tambah Buku Baru</h3>
+            {error && <Alert variant="danger">{error}</Alert>}
+            <Form onSubmit={handleSubmit}>
+              {/* ... Input form lainnya tidak berubah ... */}
+              <Form.Group className="mb-3">
+                <Form.Label>Nama Buku</Form.Label>
+                <Form.Control type="text" name="nama_buku" required placeholder="Masukkan nama buku" value={formData.nama_buku} onChange={handleChange} />
+              </Form.Group>
+              <Row>
+                <Col md={6}><Form.Group className="mb-3"><Form.Label>Tipe Buku</Form.Label><Form.Select name="tipe_buku" required value={formData.tipe_buku} onChange={handleChange}><option value="fisik">Fisik</option><option value="online">Online</option></Form.Select></Form.Group></Col>
+                <Col md={6}><Form.Group className="mb-3"><Form.Label>Jenis Buku</Form.Label><Form.Control type="text" name="jenis_buku" required placeholder="Contoh: Novel, Komik" value={formData.jenis_buku} onChange={handleChange} /></Form.Group></Col>
+              </Row>
+              <Form.Group className="mb-3"><Form.Label>Penulis</Form.Label><Form.Control type="text" name="author" required placeholder="Masukkan nama penulis" value={formData.author} onChange={handleChange} /></Form.Group>
+              <Row>
+                <Col md={6}><Form.Group className="mb-3"><Form.Label>Tanggal Terbit</Form.Label><Form.Control type="date" name="tgl_terbit" required value={formData.tgl_terbit} onChange={handleChange} /></Form.Group></Col>
+                <Col md={6}><Form.Group className="mb-3"><Form.Label>Jumlah</Form.Label><Form.Control type="number" name="jumlah" required min="1" placeholder="Jumlah buku" value={formData.jumlah} onChange={handleChange} /></Form.Group></Col>
+              </Row>
 
-          <div className="form-group mb-3">
-            <label htmlFor="tipe_buku">Tipe Buku</label>
-            <select
-              name="tipe_buku"
-              id="tipe_buku"
-              className="form-control"
-              required
-              value={formData.tipe_buku}
-              onChange={handleChange}
-            >
-              <option value="fisik">Fisik</option>
-              <option value="online">Online</option>
-            </select>
-          </div>
+              {/* --- DROPDOWN RAK BUKU MENGGUNAKAN DATA STATIS --- */}
+              <Form.Group className="mb-4">
+                <Form.Label>Rak Buku</Form.Label>
+                <Form.Select name="rakbuku_id_fk" required value={formData.rakbuku_id_fk} onChange={handleChange}>
+                  <option value="">Pilih Rak Buku</option>
+                  {/* Mapping dari array statis 'rakOptions' */}
+                  {rakOptions.map((rak) => (
+                    <option key={rak.id} value={rak.id}>
+                      {rak.label}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
 
-          <div className="form-group mb-3">
-            <label htmlFor="jenis_buku">Jenis Buku</label>
-            <input
-              type="text"
-              name="jenis_buku"
-              id="jenis_buku"
-              className="form-control"
-              required
-              placeholder="Masukkan jenis buku"
-              value={formData.jenis_buku}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="form-group mb-3">
-            <label htmlFor="tgl_terbit">Tanggal Terbit</label>
-            <input
-              type="date"
-              name="tgl_terbit"
-              id="tgl_terbit"
-              className="form-control"
-              required
-              value={formData.tgl_terbit}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="form-group mb-3">
-            <label htmlFor="author">Penulis</label>
-            <input
-              type="text"
-              name="author"
-              id="author"
-              className="form-control"
-              required
-              placeholder="Masukkan nama penulis"
-              value={formData.author}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="form-group mb-3">
-            <label htmlFor="rakbuku_id">Rak Buku</label>
-            <select
-              name="rakbuku_id"
-              id="rakbuku_id"
-              className="form-control"
-              required
-              value={formData.rakbuku_id}
-              onChange={handleChange}
-            >
-              <option value="">Pilih Rak Buku</option>
-              {rakOptions.map((rak) => (
-                <option key={rak.id} value={rak.id}>
-                  {rak.jenis}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group mb-3">
-            <label htmlFor="jumlah">Jumlah Buku Masuk</label>
-            <input
-              type="number"
-              name="jumlah"
-              id="jumlah"
-              className="form-control"
-              required
-              value={formData.jumlah}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="form-group mb-4">
-            <label htmlFor="gambarBuku">Cover Buku</label>
-            <input
-              type="file"
-              name="gambarBuku"
-              id="gambarBuku"
-              className="form-control"
-              accept="image/*"
-              required
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="d-flex justify-content-between">
-            <button type="submit" className="btn btn-primary">
-              Tambah Buku
-            </button>
-            <a href="/dashboard" className="btn btn-secondary">
-              Kembali
-            </a>
-          </div>
-        </form>
-      </div>
-    </div>
+              <div className="d-flex justify-content-between">
+                <Button type="submit" variant="primary" disabled={loading}>
+                  {loading ? <><Spinner as="span" animation="border" size="sm" /> Menambahkan...</> : 'Tambah Buku'}
+                </Button>
+                <Link to="/admin" className="btn btn-secondary">Kembali</Link>
+              </div>
+            </Form>
+          </Card>
+        </Container>
+      </main>
+      <Footer />
+    </>
   );
 };
 
-export default AddBuku;
+export default AddBook;

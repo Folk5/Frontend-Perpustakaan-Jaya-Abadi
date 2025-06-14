@@ -179,9 +179,9 @@ const AdminDashboard = () => {
             <Col lg={10}>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <Button variant="success">List Pinjaman</Button>
-                <Button variant="primary" onClick={handleAddBuku}>
-                  <PlusCircleFill className="me-2" /> Tambah Buku
-                </Button>
+                <Link to="/add-book" className="btn btn-primary">
+                    <PlusCircleFill className="me-2" /> Tambah Buku
+                </Link>
               </div>
               <InputGroup className="mb-3">
                 <FormControl

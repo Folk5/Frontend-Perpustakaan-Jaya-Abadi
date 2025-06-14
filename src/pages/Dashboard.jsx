@@ -9,7 +9,7 @@ const getRakLabel = (rakId) => {
     switch (rakId) {
         case 1: return 'Fiksi';
         case 2: return 'Non-Fiksi';
-        case 3: return 'Referensi';
+        case 3: return 'Edukasi';
         case 4: return 'Sains';
         case 5: return 'Komik';
         default: return 'Lainnya';
