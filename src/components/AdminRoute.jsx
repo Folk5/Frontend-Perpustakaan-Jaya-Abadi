@@ -1,15 +1,16 @@
-import { Navigate } from "react-router-dom";
+// src/components/AdminRoute.jsx
+import React from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
 
-function AdminRoute({ children }) {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+const AdminRoute = () => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
 
-  if (!token || role !== "admin") {
-    // Jika tidak login atau bukan admin, tolak
-    return <Navigate to="/" replace />;
-  }
+    if (!token || role !== "admin") {
+        return <Navigate to="/" replace />;
+    }
 
-  return children;
-}
+    return <Outlet />; 
+};
 
 export default AdminRoute;

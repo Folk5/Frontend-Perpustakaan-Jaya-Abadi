@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import Footer from '../components/Footer'; // Sesuaikan path jika perlu
+import Footer from '../components/Footer';
 import { Container, Row, Col, Card, Button, Table, InputGroup, FormControl, Badge, Spinner, Alert } from 'react-bootstrap';
 import { Search, PlusCircleFill, PencilSquare, Trash3Fill, HouseDoorFill, BoxArrowRight } from 'react-bootstrap-icons';
 
-// Komponen BukuTable tidak perlu diubah
+// Komponen BukuTable tidak diubah
 const BukuTable = ({ bukuList, onEdit, onDelete }) => (
     <Card className="shadow-sm">
-        {/* ... isi komponen table ... */}
         <Card.Header as="h5">Daftar Buku</Card.Header>
         <Card.Body>
         <Table striped bordered hover responsive>
@@ -40,9 +39,9 @@ const BukuTable = ({ bukuList, onEdit, onDelete }) => (
                         </Badge>
                     </td>
                     <td>
-                        <Button variant="outline-warning" size="sm" className="me-2" onClick={() => onEdit(buku.buku_id)}>
+                        <Link to={`/admin/edit-book/${buku.buku_id}`} className="btn btn-outline-warning btn-sm me-2">
                             <PencilSquare /> Edit
-                        </Button>
+                        </Link>
                         <Button variant="outline-danger" size="sm" onClick={() => onDelete(buku.buku_id)}>
                             <Trash3Fill /> Hapus
                         </Button>
@@ -61,36 +60,27 @@ const BukuTable = ({ bukuList, onEdit, onDelete }) => (
 const AdminDashboard = () => {
   const navigate = useNavigate();
   
-  // State lainnya
+  // State tidak berubah
   const [bukuList, setBukuList] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredBuku, setFilteredBuku] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // --- UBAH: LOGIKA PROTEKSI HALAMAN ---
-  // State untuk menandai apakah user berhak akses
   const [isAuthorized, setIsAuthorized] = useState(false);
 
+  // useEffect untuk proteksi dan fetch data tidak berubah
   useEffect(() => {
-    // 1. Periksa role dari localStorage saat komponen dimuat
     const userRole = localStorage.getItem('role');
-
     if (userRole !== 'admin') {
-      // 2. Jika bukan admin, tampilkan alert dan redirect
       alert('Anda tidak memiliki hak akses ke halaman ini.');
-      navigate('/dashboard'); // Alihkan ke beranda user
+      navigate('/dashboard');
     } else {
-      // 3. Jika admin, izinkan komponen untuk dirender dan memuat data
       setIsAuthorized(true);
     }
   }, [navigate]);
 
-  // useEffect untuk fetch data HANYA jika sudah terotorisasi
   useEffect(() => {
-    // Jangan fetch data jika pengguna tidak berhak
     if (!isAuthorized) return;
-
     const fetchBuku = async () => {
       try {
         setLoading(true);
@@ -106,9 +96,9 @@ const AdminDashboard = () => {
       }
     };
     fetchBuku();
-  }, [isAuthorized]); // Bergantung pada status otorisasi
+  }, [isAuthorized]);
 
-  // ... (Sisa logika lain tidak berubah)
+  // handleLogout tidak berubah
   const handleLogout = () => {
     const isConfirmed = window.confirm('Apakah Anda yakin ingin keluar?');
     if (isConfirmed) {
@@ -118,6 +108,7 @@ const AdminDashboard = () => {
     }
   };
   
+  // useEffect untuk filter tidak berubah
   useEffect(() => {
     if (!isAuthorized) return;
     const results = bukuList.filter(buku =>
@@ -128,20 +119,41 @@ const AdminDashboard = () => {
     setFilteredBuku(results);
   }, [searchTerm, bukuList, isAuthorized]);
 
-  const handleAddBuku = () => alert('Fungsi Tambah Buku akan diimplementasikan.');
+  // handleEdit tidak berubah
   const handleEdit = (id) => alert(`Fungsi Edit untuk buku ID: ${id} akan diimplementasikan.`);
+  
+  // --- PERUBAHAN UTAMA DI SINI ---
   const handleDeleteBuku = async (id) => {
     if (window.confirm(`Apakah Anda yakin ingin menghapus buku dengan ID: ${id}?`)) {
-        try {
-          await axios.delete(`http://localhost:8080/api/books/${id}`);
-          setBukuList(bukuList.filter(buku => buku.buku_id !== id));
-          alert(`Buku dengan ID: ${id} berhasil dihapus.`);
-        } catch (err) {
-          alert('Gagal menghapus buku. Terjadi kesalahan pada server.');
-          console.error(err);
+      try {
+        // Ambil token dari localStorage untuk otorisasi
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('Otorisasi gagal. Silakan login kembali.');
+          return; // Hentikan fungsi jika token tidak ada
         }
+        
+        // Kirim request hapus dengan header otorisasi
+        await axios.delete(`http://localhost:8080/api/books/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        // Perbarui daftar buku di UI jika berhasil
+        setBukuList(bukuList.filter(buku => buku.buku_id !== id));
+        alert(`Buku dengan ID: ${id} berhasil dihapus.`);
+      } catch (err) {
+        // Tangani error, bisa jadi karena token expired atau masalah server
+        const errorMessage = err.response?.status === 403 
+            ? 'Akses ditolak. Anda mungkin tidak memiliki izin.'
+            : 'Gagal menghapus buku. Terjadi kesalahan pada server.';
+        alert(errorMessage);
+        console.error("Error deleting book:", err);
       }
+    }
   };
+  // --- AKHIR PERUBAHAN ---
 
   const renderContent = () => {
     if (loading) return <div className="text-center"><Spinner animation="border" /><p>Memuat...</p></div>;
@@ -149,13 +161,10 @@ const AdminDashboard = () => {
     return <BukuTable bukuList={filteredBuku} onEdit={handleEdit} onDelete={handleDeleteBuku} />;
   }
   
-  // --- UBAH: JANGAN RENDER APAPUN JIKA TIDAK BERHAK ---
-  // Ini mencegah "flash" atau kedipan konten sebelum redirect
   if (!isAuthorized) {
     return null; 
   }
 
-  // Jika lolos pengecekan, render seluruh halaman
   return (
     <>
       <main className="my-4">
@@ -179,7 +188,7 @@ const AdminDashboard = () => {
             <Col lg={10}>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <Button variant="success">List Pinjaman</Button>
-                <Link to="/add-book" className="btn btn-primary">
+                <Link to="/admin/add-book" className="btn btn-primary">
                     <PlusCircleFill className="me-2" /> Tambah Buku
                 </Link>
               </div>
