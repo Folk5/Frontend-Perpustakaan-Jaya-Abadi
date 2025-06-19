@@ -9,10 +9,12 @@ import AddBook from "./pages/AddBook";
 import EditBook from "./pages/EditBook";
 import AdminRoute from "./components/AdminRoute"; 
 import ListPinjamanAdmin from "./pages/ListPinjamanAdmin";
+import Chatbot from "./components/Chatbot";
 
 function App() {
   return (
     <BrowserRouter>
+    <Chatbot />
       <Routes>
         {/* ... Rute publik dan user biasa ... */}
         <Route path="/" element={<Login />} />

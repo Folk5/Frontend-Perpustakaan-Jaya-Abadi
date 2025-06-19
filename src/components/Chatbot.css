@@ -1,0 +1,253 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+
+/* Variabel Warna untuk tema yang mudah diubah */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-color: #3a3f4d;
+    --background-color: #f4f7f9;
+    --bot-bubble-color: #0000ed;
+    --user-bubble-color: #4a4a4a;
+    --font-family: 'Nunito', sans-serif;
+}
+
+.chatbot-toggle-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    /* Gunakan gradien untuk tombol */
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    box-shadow: 0 4px S15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.chatbot-toggle-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.chat-window {
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    width: 370px;
+    height: 550px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-family: var(--font-family);
+    border: 1px solid #e0e0e0;
+}
+
+.chat-window.open {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.chat-window .card-header {
+    background: var(--primary-gradient);
+    color: rgb(255, 255, 255);
+    border-bottom: none;
+}
+
+.messages-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background-color: var(--background-color);
+}
+
+/* Styling untuk scrollbar */
+.messages-list::-webkit-scrollbar {
+    width: 6px;
+}
+.messages-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+.messages-list::-webkit-scrollbar-track {
+    background: var(--background-color);
+}
+
+
+/* Wrapper untuk pesan dan avatar */
+.message-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    max-width: 90%;
+    /* Animasi untuk pesan baru */
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.message-wrapper.user {
+    align-self: flex-end;
+    flex-direction: row-reverse; /* Balik urutan untuk user */
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    flex-shrink: 0; /* Mencegah avatar menyusut */
+}
+
+.avatar.bot { background-color: #764ba2; }
+.avatar.user { background-color: #667eea; }
+
+.message-bubble {
+    padding: 12px 18px;
+    border-radius: 18px;
+    word-wrap: break-word;
+    line-height: 1.5;
+}
+
+.message-bubble.user {
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+    border-bottom-right-radius: 5px;
+}
+
+.message-bubble.bot {
+    background-color: #ffffff;
+    color: #333;
+    border: 1px solid #e5e5e5;
+    border-bottom-left-radius: 5px;
+}
+
+.chat-window .card-footer {
+    border-top: 1px solid #e0e0e0;
+    padding: 10px 15px;
+}
+
+.chat-window .form-control {
+    border-radius: 20px;
+    border-color: #ddd;
+}
+.chat-window .form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    border-color: #667eea;
+}
+
+/* Indikator mengetik (3 titik) */
+.typing-indicator span {
+    height: 8px;
+    width: 8px;
+    background-color: #9E9EA1;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse 1.4s infinite ease-in-out both;
+}
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes pulse {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
+}
+
+/* Responsif */
+@media (max-width: 480px) {
+    .chat-window {
+        width: 100%;
+        height: 100%;
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
+    }
+    .chatbot-toggle-button {
+        bottom: 15px;
+        right: 15px;
+    }
+}
+
+.chat-window .card-footer .d-flex .form-control {
+    /* Ini memerintahkan input teks untuk mengambil semua sisa ruang kosong */
+    flex-grow: 0; 
+}
+
+.chat-window .card-footer .d-flex .btn {
+    /* Ini mencegah tombol menjadi gepeng/menyusut */
+    flex-shrink: 4; 
+}
+
+/* Tambahkan kode ini ke file Chatbot.css */
+
+.chatbot-header {
+    /* Menggunakan flexbox untuk layout */
+    display: flex;
+    justify-content: space-between; /* Mendorong item ke ujung */
+    align-items: center;
+    /* Ambil gaya dari .card-header sebelumnya */
+    background: var(--primary-gradient);
+    color: white;
+    padding: 0.75rem 1rem;
+}
+
+.header-center {
+    /* Biarkan judul tumbuh mengisi ruang tengah */
+    flex-grow: 1;
+    text-align: center; /* Pastikan teksnya di tengah */
+}
+
+.header-side {
+    /* Beri lebar yang sama pada sisi kiri dan kanan */
+    /* Sesuaikan angka ini agar pas dengan lebar tombol Anda */
+    flex-basis: 32px; 
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Kita juga bisa rapikan tombol tutupnya di sini */
+.header-side .chat-close-btn {
+    padding: 0.2rem;
+    line-height: 1;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    opacity: 0.8;
+    transition: all 0.2s ease-in-out;
+}
+
+.header-side .chat-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    opacity: 1;
+}

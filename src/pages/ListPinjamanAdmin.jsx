@@ -173,6 +173,7 @@ const ListPinjamanAdmin = () => {
                     </Row>
                 </Container>
             </main>
+            <Footer/>
         </>
     );
 };
