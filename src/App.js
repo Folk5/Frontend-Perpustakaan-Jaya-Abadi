@@ -8,6 +8,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AddBook from "./pages/AddBook";
 import EditBook from "./pages/EditBook";
 import AdminRoute from "./components/AdminRoute"; 
+import ListPinjamanAdmin from "./pages/ListPinjamanAdmin";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/add-book" element={<AddBook />} />
           <Route path="/admin/edit-book/:id" element={<EditBook />} />
+          <Route path="/admin/list-pinjaman" element={<ListPinjamanAdmin/>}/>
         </Route>
       </Routes>
     </BrowserRouter>

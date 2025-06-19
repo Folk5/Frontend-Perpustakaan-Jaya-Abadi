@@ -187,7 +187,9 @@ const AdminDashboard = () => {
           <Row className="justify-content-center mb-5">
             <Col lg={10}>
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <Button variant="success">List Pinjaman</Button>
+              <Link to="/admin/list-pinjaman" className="btn btn-success">
+                  List Pinjaman Semua User
+                </Link>
                 <Link to="/admin/add-book" className="btn btn-primary">
                     <PlusCircleFill className="me-2" /> Tambah Buku
                 </Link>
