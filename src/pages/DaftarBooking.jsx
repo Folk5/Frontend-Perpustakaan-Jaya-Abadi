@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Spinner } from "react-bootstrap";
-import { Calendar, User, BookOpen, Clock } from 'lucide-react';
+// Menggunakan ikon yang benar dari lucide-react
+import { Calendar, User, BookOpen, Clock } from 'lucide-react'; 
 import CustomNavbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "../styles/Booking.css";
-import "../styles/DashboardPage.css"; // Tetap diperlukan untuk layout grid dan container
+import "../styles/DashboardPage.css";
+import axios from 'axios'; // Import axios untuk request API yang lebih baik
 
 // Helper untuk label rak
 const getRakLabel = (rakId) => {
@@ -20,78 +22,42 @@ const getRakLabel = (rakId) => {
 
 const BookingBookCard = ({ book }) => {
     const formatDate = (dateString) => {
-        if (!dateString) return '';
-        try {
-            const date = new Date(dateString);
-            const options = { day: '2-digit', month: 'short', year: 'numeric' };
-            return date.toLocaleDateString('id-ID', options);
-        } catch (e) {
-            return dateString;
-        }
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
     };
 
-    const getStatusClass = (status) => {
-        return status === 'overdue' ? 'overdue' : 'active';
-    };
-
-    const getStatusText = (status) => {
-        return status === 'overdue' ? 'BOOKING KADALUWARSA' : '';
-    };
+    const isOverdue = book.status === 'overdue';
 
     return (
-        <div className={`book-card ${getStatusClass(book.status)}`}>
+        <div className={`book-card ${isOverdue ? 'overdue' : 'active'}`}>
             <div className="book-info">
-                <div className="book-icon">
-                    <BookOpen />
-                </div>
+                <div className="book-icon"><BookOpen /></div>
                 <div className="book-details">
-                    <h3 className={`book-title ${getStatusClass(book.status) === 'overdue' ? 'red' : 'blue'}`}>
-                        {book.title}
-                    </h3>
-
+                    <h3 className={`book-title ${isOverdue ? 'red' : 'blue'}`}>{book.title}</h3>
                     <div className="book-meta">
-                        <div className="meta-item">
-                            <User />
-                            <span className="meta-label">Penulis: {book.author}</span>
-                        </div>
-
-                        <div className="meta-item">
-                            <BookOpen />
-                            <span className="meta-label">Rak: {book.category}</span>
-                        </div>
-
-                        <div className="meta-item">
-                            <BookOpen />
-                            <span className="meta-label">Jenis: {book.type}</span>
-                        </div>
-
-                        <div className="meta-item">
-                            <Calendar />
-                            <span className="meta-label">Terbit: {formatDate(book.publishedDate)}</span>
-                        </div>
+                        <div className="meta-item"><User /><span className="meta-label">Penulis: {book.author}</span></div>
+                        <div className="meta-item"><BookOpen /><span className="meta-label">Rak: {book.category}</span></div>
+                        <div className="meta-item"><BookOpen /><span className="meta-label">Jenis: {book.type}</span></div>
+                        <div className="meta-item"><Calendar /><span className="meta-label">Terbit: {formatDate(book.publishedDate)}</span></div>
                     </div>
                 </div>
             </div>
 
             <div className="booking-details">
-                <div className="booking-item">
-                    <Calendar />
-                    <span className="booking-label">Booking: {formatDate(book.bookingDate)}</span>
-                </div>
-
+                <div className="booking-item"><Calendar /><span className="booking-label">Booking: {formatDate(book.bookingDate)}</span></div>
                 <div className="booking-row">
                     <div className="booking-item">
-                        <Clock />
-                        <span className={`status-text ${getStatusClass(book.status)}`}>
-                            Kadaluwarsa: {formatDate(book.returnDate)}
-                        </span>
+                        <Clock /><span className={`status-text ${isOverdue ? 'overdue' : 'active'}`}>Kadaluwarsa: {formatDate(book.returnDate)}</span>
                     </div>
                 </div>
 
-                {book.status === 'overdue' && (
-                    <div className="status-badge">
-                        <span className="overdue-badge">
-                            {getStatusText(book.status)}
+                {/* --- PENAMBAHAN BAGIAN DENDA --- */}
+                {/* Tampilkan hanya jika buku telat dan ada denda */}
+                {isOverdue && book.denda > 0 && (
+                    <div className="fine-details">
+                        <span className="fine-label">Denda Keterlambatan:</span>
+                        <span className="fine-amount">
+                            Rp {book.denda.toLocaleString('id-ID')}
                         </span>
                     </div>
                 )}
@@ -105,8 +71,12 @@ const DaftarBookingSaya = () => {
     const [bookingData, setBookingData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [userRole, setUserRole] = useState(null);
 
     useEffect(() => {
+        const role = localStorage.getItem('role');
+        setUserRole(role);
+
         const fetchBookingData = async () => {
             setLoading(true);
             setError(null);
@@ -114,27 +84,38 @@ const DaftarBookingSaya = () => {
             const accountId = localStorage.getItem("accountId");
 
             if (!accountId) {
-                setError("Account ID not found. Please log in.");
+                setError("Account ID tidak ditemukan. Harap login.");
                 setLoading(false);
                 return;
             }
 
             try {
-                const response = await fetch(`http://localhost:8080/api/booking/bookings/${accountId}`);
+                const token = localStorage.getItem('token');
+                const response = await axios.get(`http://localhost:8080/api/booking/bookings/${accountId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
+                const data = response.data;
 
                 const processedData = data.map(book => {
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
+
                     const expiredDate = new Date(book.expired_date);
                     expiredDate.setHours(0, 0, 0, 0);
 
                     const status = expiredDate < today ? 'overdue' : 'active';
+                    let denda = 0;
+
+                    if (status === 'overdue') {
+                        // Hitung selisih hari
+                        const diffTime = Math.abs(today - expiredDate);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                        const daysToCharge = Math.min(diffDays, 7);
+                        
+                        denda = daysToCharge * 30000;
+                    }
 
                     return {
                         id: book.buku_id,
@@ -145,14 +126,15 @@ const DaftarBookingSaya = () => {
                         publishedDate: book.tgl_terbit,
                         bookingDate: book.booking_date,
                         returnDate: book.expired_date,
-                        status: status
+                        status: status,
+                        denda: denda 
                     };
                 });
 
                 setBookingData(processedData);
             } catch (e) {
                 console.error("Failed to fetch booking data:", e);
-                setError(e.message);
+                setError(e.response?.data?.message || e.message);
             } finally {
                 setLoading(false);
             }
@@ -163,53 +145,24 @@ const DaftarBookingSaya = () => {
 
     const renderContent = () => {
         if (loading) {
-            return (
-                <div className="text-center py-5">
-                    <Spinner animation="border" variant="primary" />
-                    <p className="mt-3">Memuat daftar booking...</p>
-                </div>
-            );
+            return <div className="text-center py-5"><Spinner animation="border" variant="primary" /><p className="mt-3">Memuat...</p></div>;
         }
-
         if (error) {
-            return (
-                <div className="text-center py-5">
-                    <p className="text-danger">Error: {error}</p>
-                    <p>Gagal memuat daftar booking Anda. Pastikan Anda sudah login.</p>
-                </div>
-            );
+            return <div className="text-center py-5"><p className="text-danger">Error: {error}</p></div>;
         }
-
         if (bookingData.length === 0) {
-            return (
-                <div className="text-center py-5">
-                    <p className="text-muted">Anda belum memiliki buku yang sedang dibooking.</p>
-                </div>
-            );
+            return <div className="text-center py-5"><p className="text-muted">Anda belum memiliki buku yang dibooking.</p></div>;
         }
-
-        return (
-            <div className="book-list">
-                {bookingData.map((book) => (
-                    <BookingBookCard key={book.id} book={book} />
-                ))}
-            </div>
-        );
+        return <div className="book-list">{bookingData.map((book) => <BookingBookCard key={book.id} book={book} />)}</div>;
     };
 
     return (
         <div className="dashboard-container">
-            <CustomNavbar />
-
-            <main className="main-content px-0"> {/* Perhatikan kelas main-content dan px-0 */}
-                {/* Judul langsung di dalam main */}
-                <h1 className="display-4 text-center py-4">Daftar Booking Saya</h1> {/* Tambahkan kelas text-center dan py-4 untuk styling */}
-
-                <div className="book-list-container">
-                    {renderContent()}
-                </div>
+            <CustomNavbar role={userRole}/>
+            <main className="main-content px-0">
+                <h1 className="display-4 text-center py-4">Daftar Booking Saya</h1>
+                <div className="book-list-container">{renderContent()}</div>
             </main>
-
             <Footer />
         </div>
     );

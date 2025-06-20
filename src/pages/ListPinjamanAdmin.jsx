@@ -1,16 +1,10 @@
-// src/pages/ListPinjamanAdmin.jsx
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Container, Card, Button, Spinner, Alert, Row, Col, Badge } from 'react-bootstrap';
 import axios from 'axios';
 import Footer from '../components/Footer';
-
-// --- PERBAIKAN UTAMA ADA DI BARIS IMPORT INI ---
-// Nama ikon yang benar adalah 'Person' dan 'Book'
 import { Person, Book, Calendar, Clock, ArrowReturnLeft } from 'react-bootstrap-icons';
 
-// Komponen kecil untuk menampilkan satu kartu buku yang dipinjam
 const LoanedBookCard = ({ loan, onReturn, returnLoadingId }) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -27,7 +21,6 @@ const LoanedBookCard = ({ loan, onReturn, returnLoadingId }) => {
             <Card.Body>
                 <Row>
                     <Col md={8}>
-                        {/* --- PERBAIKAN KEDUA: Gunakan ikon <Book /> --- */}
                         <Card.Title className="d-flex align-items-center"><Book className="me-2" />{loan.judul}</Card.Title>
                         <Card.Text className="mb-1 d-flex align-items-center small text-muted">
                             <Calendar className="me-2" /> Tgl Booking: {formatDate(loan.bookingDate)}
@@ -52,12 +45,22 @@ const LoanedBookCard = ({ loan, onReturn, returnLoadingId }) => {
                         </Button>
                     </Col>
                 </Row>
+
+                {isOverdue && loan.denda > 0 && (
+                    <div className="mt-3 p-2 border border-danger-subtle rounded bg-danger-subtle">
+                        <div className="d-flex justify-content-between align-items-center">
+                            <span className="fw-bold text-danger-emphasis">Denda Keterlambatan:</span>
+                            <span className="fw-bolder fs-5 text-danger">
+                                Rp {loan.denda.toLocaleString('id-ID')}
+                            </span>
+                        </div>
+                    </div>
+                )}
             </Card.Body>
         </Card>
     );
 };
 
-// Komponen utama
 const ListPinjamanAdmin = () => {
     const navigate = useNavigate();
     const [allBookings, setAllBookings] = useState([]);
@@ -84,7 +87,29 @@ const ListPinjamanAdmin = () => {
                 const response = await axios.get('http://localhost:8080/api/booking/all-booking', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                setAllBookings(response.data);
+                
+                const dataWithFines = response.data.map(user => {
+                    const processedPinjaman = user.pinjaman.map(loan => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const expiredDate = new Date(loan.expiredDate);
+                        expiredDate.setHours(0, 0, 0, 0);
+
+                        let denda = 0;
+                        if (expiredDate < today) {
+                            const diffTime = Math.abs(today - expiredDate);
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            const daysToCharge = Math.min(diffDays, 7);
+                            denda = daysToCharge * 30000;
+                        }
+                        return { ...loan, denda: denda };
+                    });
+                    return { ...user, pinjaman: processedPinjaman };
+                });
+                
+                setAllBookings(dataWithFines);
+                // --- AKHIR PERUBAHAN ---
+
             } catch (err) {
                 setError("Gagal memuat data pinjaman.");
                 console.error(err);
@@ -98,23 +123,18 @@ const ListPinjamanAdmin = () => {
 
     const handleReturnBook = async (bookingId) => {
         if (!window.confirm(`Apakah Anda yakin ingin mengembalikan buku dengan Booking ID: ${bookingId}?`)) return;
-
         setReturnLoadingId(bookingId);
         const token = localStorage.getItem('token');
-        
         try {
             await axios.post(`http://localhost:8080/api/booking/return-book/${bookingId}`, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             alert('Buku berhasil dikembalikan!');
-            
             const updatedBookings = allBookings.map(user => ({
                 ...user,
                 pinjaman: user.pinjaman.filter(p => p.bookingId !== bookingId)
             })).filter(user => user.pinjaman.length > 0);
-
             setAllBookings(updatedBookings);
-
         } catch (err) {
             alert('Gagal mengembalikan buku.');
             console.error(err);
@@ -123,20 +143,15 @@ const ListPinjamanAdmin = () => {
         }
     };
 
+
     const renderContent = () => {
-        if (loading) {
-            return <div className="text-center my-5"><Spinner animation="border" /><p>Memuat data...</p></div>;
-        }
-        if (error) {
-            return <Alert variant="danger">{error}</Alert>;
-        }
-        if (allBookings.length === 0) {
-            return <p className="text-center text-muted">Belum ada buku yang sedang dipinjam.</p>;
-        }
+        if (loading) return <div className="text-center my-5"><Spinner animation="border" /><p>Memuat data...</p></div>;
+        if (error) return <Alert variant="danger">{error}</Alert>;
+        if (allBookings.length === 0) return <p className="text-center text-muted">Belum ada buku yang sedang dipinjam.</p>;
+        
         return allBookings.map((user) => (
             <Card key={user.memberId} className="mb-4 shadow">
                 <Card.Header as="h5" className="d-flex align-items-center">
-                    {/* --- PERBAIKAN KETIGA: Gunakan ikon <Person /> --- */}
                     <Person className="me-2" /> {user.nama} (ID: {user.memberId})
                 </Card.Header>
                 <Card.Body>
