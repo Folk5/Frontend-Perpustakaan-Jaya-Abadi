@@ -3,7 +3,8 @@
 /* Container */
 .user-profile {
   min-height: 100vh;
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  /* background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); */
+  background: white;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
@@ -61,11 +62,12 @@
 
 /* Profile Card */
 .user-profile__card {
-  background-color: white;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+ background-color: white;
+ border-radius: 1rem;
+ box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+ padding: 1.5rem;
+ margin-bottom: 1.5rem;
+ border: 1px solid black; 
 }
 
 .user-profile__title {
@@ -142,7 +144,7 @@
 .user-profile__field-input {
   width: 100%;
   background-color: white;
-  border: 1px solid #d1d5db;
+  border: 1px solid #000000;
   border-radius: 0.5rem;
   padding: 0.5rem 0.75rem;
   color: #1f2937;
